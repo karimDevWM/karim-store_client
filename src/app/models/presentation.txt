@@ -1,0 +1,3 @@
+this folder gonna contain any types that we gonna create in typescript
+
+- product.tsx

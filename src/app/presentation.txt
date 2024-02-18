@@ -1,0 +1,2 @@
+this folder gonna contain the common app features.
+there is no specific features inside of it.

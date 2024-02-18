@@ -1,0 +1,2 @@
+this folder will contain a file calles routes, which in there we gonna pass all the routes
+of our react app

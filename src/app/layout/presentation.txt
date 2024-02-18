@@ -1,0 +1,4 @@
+everything inside the layout folder gonna contain all elements related to the app view
+
+- App.tsx
+- index.css renamed as styles.css
