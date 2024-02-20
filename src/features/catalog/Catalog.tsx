@@ -1,26 +1,21 @@
-import axios from "axios";
-import { Product } from "../../app/models/product";
 import ProductList from "./ProductList";
-import React, { useEffect, useState } from "react";
-import agent from "../../app/api/agent";
+import React, { useEffect } from "react";
 import LoadingComponent from "../../app/layout/LoadingComponent";
-import { error } from "console";
+import { useAppDispatch, useAppSelector } from "../../app/store/configureStore";
+import { fetchProductsAsync, productSelectors } from "./catalogSlice";
 
 
 export default function Catalog(){
     // props : properties of App.tsx parent component
-
-    const [products, setProducts] = useState<Product[]>([]);
-    const [loading, setLoading] = useState(true);
+    const products = useAppSelector(productSelectors.selectAll);
+    const dispatch = useAppDispatch();
+    const {productsLoaded, status} = useAppSelector(state => state.catalog);
 
   useEffect(() => {
-    agent.Catalog.list()
-    .then(products => setProducts(products))
-    .catch(error => console.log(error))
-    .finally(() => setLoading(false))
-  }, []);
+    if(!productsLoaded) dispatch(fetchProductsAsync());
+  }, [productsLoaded, dispatch]);
 
-    if(loading) return <LoadingComponent message="Loading products ..."/>
+    if(status.includes('pending')) return <LoadingComponent message="Loading products ..."/>
 
     return (
         <>
