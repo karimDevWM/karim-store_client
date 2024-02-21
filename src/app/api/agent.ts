@@ -3,6 +3,8 @@ import { toast } from "react-toastify";
 import { router } from "../router/Routes";
 import { resolve } from "path";
 import { get } from "http";
+import { fetchFilters } from "../../features/catalog/catalogSlice";
+import { PaginatedResponse } from "../models/pagination";
 
 const sleep = () => new Promise(resolve => setTimeout(resolve, 500));
 
@@ -13,6 +15,18 @@ const responseBody = (response: AxiosResponse) => response.data;
 
 axios.interceptors.response.use(async response => {
     await sleep();
+    /*
+     * pagination doit etre ecrit de la meme maniere que dans le header reçu de l'api et
+     * doit etre ecris en miniscule car axios ne reconnait que siil est en majuscule" 
+    */
+    const pagination = response.headers['pagination'];
+    if(pagination) {
+        response.data = new PaginatedResponse(
+            response.data,
+            JSON.parse(pagination)
+        );
+        return response;
+    }
     return response
 }, (error: AxiosError) => {
     const {data, status} = error.response as AxiosResponse;
@@ -42,15 +56,16 @@ axios.interceptors.response.use(async response => {
 })
 
 const requests = {
-    get: (url: string) => axios.get(url).then(responseBody),
+    get: (url: string, params?: URLSearchParams) => axios.get(url, {params}).then(responseBody),
     post: (url: string, body: object) => axios.post(url, body).then(responseBody),
     put: (url: string, body: object) => axios.put(url, body).then(responseBody),
     delete: (url: string) => axios.delete(url).then(responseBody),
 }
 
 const Catalog = {
-    list: () => requests.get('Products/GetProductsWithoutFilters'),
-    details: (id: number) => requests.get(`Products/GetProduct/${id}`)
+    list: (params: URLSearchParams) => requests.get('Products/GetProductsWithoutFilters', params),
+    details: (id: number) => requests.get(`Products/GetProduct/${id}`),
+    fetchFilters: () => requests.get('Products/GetFilters/filters')
 }
 
 

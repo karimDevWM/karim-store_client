@@ -14,6 +14,7 @@ export default function ProductCard({ product }: Props){
     const {status} = useAppSelector(state => state.basket);
     const dispatch = useAppDispatch();
 
+    // console.log(product);
     return(
         <>
             <Card>
