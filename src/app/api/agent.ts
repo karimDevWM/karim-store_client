@@ -1,10 +1,8 @@
 import axios, { AxiosError, AxiosResponse } from "axios";
 import { toast } from "react-toastify";
 import { router } from "../router/Routes";
-import { resolve } from "path";
-import { get } from "http";
-import { fetchFilters } from "../../features/catalog/catalogSlice";
 import { PaginatedResponse } from "../models/pagination";
+import { store } from "../store/configureStore";
 
 const sleep = () => new Promise(resolve => setTimeout(resolve, 500));
 
@@ -12,6 +10,12 @@ axios.defaults.baseURL = "http://localhost:5011/api/";
 axios.defaults.withCredentials = true;
 
 const responseBody = (response: AxiosResponse) => response.data;
+
+axios.interceptors.request.use(config => {
+    const token = store.getState().account.user?.token;
+    if(token) config.headers.Authorization = `Bearer ${token}`;
+    return config;
+})
 
 axios.interceptors.response.use(async response => {
     await sleep();
@@ -63,7 +67,7 @@ const requests = {
 }
 
 const Catalog = {
-    list: (params: URLSearchParams) => requests.get('Products/GetProductsWithoutFilters', params),
+    list: (params: URLSearchParams) => requests.get('Products/GetProducts', params),
     details: (id: number) => requests.get(`Products/GetProduct/${id}`),
     fetchFilters: () => requests.get('Products/GetFilters/filters')
 }
@@ -83,10 +87,17 @@ const Basket = {
     removeItem: (productId: number, quantity = 1) => requests.delete(`Basket/RemoveBasket?productId=${productId}&quantity=${quantity}`),
 }
 
+const Account = {
+    login: (values: any) => requests.post('Account/Login/login', values),
+    register: (values: any) => requests.post('Account/Register/register', values),
+    currentUser: () => requests.get('Account/GetCurrentUser/currentUser')
+}
+
 const agent = {
     Catalog,
     TestErrors,
     Basket,
+    Account
 }
 
 export default agent;

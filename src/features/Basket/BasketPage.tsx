@@ -35,7 +35,7 @@ export default function BasketPage() {
                             >
                                 <TableCell component="th" scope="row">
                                     <Box display="flex" alignItems="center">
-                                        <img src={process.env.PUBLIC_URL + '/images/' + item.photo} alt={item.name} style={{height: 50, marginRight: 20}} />
+                                        <img src={item.pictureUrl} alt={item.name} style={{height: 50, marginRight: 20}} />
                                         <span>{item.name}</span>
                                     </Box>
                                 </TableCell>

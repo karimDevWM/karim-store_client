@@ -4,6 +4,7 @@ export interface Product {
   description: string
   price: number
   photo: string
+  pictureUrl: string
   type: string
   brand: string
   quantityInStock: number
