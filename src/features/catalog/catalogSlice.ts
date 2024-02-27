@@ -21,30 +21,34 @@ interface CatalogState {
 const productsAdapter = createEntityAdapter<Product>();
 
 function getAxiosParams(productParams: ProductParams) {
-    const params = new URLSearchParams();
-    params.append('pageNumber', productParams.pageNumber.toString());
-    params.append('pageSize', productParams.pageSize.toString());
-    params.append('orderBy', productParams.orderBy);
-    if(productParams.searchTerm) params.append('searchTerm', productParams.searchTerm);
-    if(productParams.brands.length > 0) params.append('brands', productParams.brands.toString());
-    if(productParams.types.length > 0) params.append('types', productParams.types.toString());
+  const params = new URLSearchParams();
+  params.append("pageNumber", productParams.pageNumber.toString());
+  params.append("pageSize", productParams.pageSize.toString());
+  params.append("orderBy", productParams.orderBy);
+  if (productParams.searchTerm)
+    params.append("searchTerm", productParams.searchTerm);
+  if (productParams.brands.length > 0)
+    params.append("brands", productParams.brands.toString());
+  if (productParams.types.length > 0)
+    params.append("types", productParams.types.toString());
 
-    return params;
+  return params;
 }
 
-export const fetchProductsAsync = createAsyncThunk<Product[], void, {state: RootState}>(
-  "catalog/fetchProductsAsync",
-  async (_, thunkAPI) => {
-    const params = getAxiosParams(thunkAPI.getState().catalog.productParams);
-    try {
-      const response = await agent.Catalog.list(params);
-      thunkAPI.dispatch(setMetadata(response.metadata));
-      return response.items;
-    } catch (error: any) {
-      return thunkAPI.rejectWithValue({ error: error.data });
-    }
+export const fetchProductsAsync = createAsyncThunk<
+  Product[],
+  void,
+  { state: RootState }
+>("catalog/fetchProductsAsync", async (_, thunkAPI) => {
+  const params = getAxiosParams(thunkAPI.getState().catalog.productParams);
+  try {
+    const response = await agent.Catalog.list(params);
+    thunkAPI.dispatch(setMetadata(response.metadata));
+    return response.items;
+  } catch (error: any) {
+    return thunkAPI.rejectWithValue({ error: error.data });
   }
-);
+});
 
 export const fetchProductAsync = createAsyncThunk<Product, number>(
   "catalog/fetchProductAsync",
@@ -74,7 +78,7 @@ function initParams() {
     pageSize: 6,
     orderBy: "name",
     brands: [],
-    types: []
+    types: [],
   };
 }
 
@@ -87,23 +91,35 @@ export const catalogSlice = createSlice({
     brands: [],
     types: [],
     productParams: initParams(),
-    metadata: null
+    metadata: null,
   }),
   reducers: {
     setProductParams: (state, action) => {
-        state.productsLoaded = false;
-        state.productParams = {...state.productParams, ...action.payload, pageNumber: 1};
+      state.productsLoaded = false;
+      state.productParams = {
+        ...state.productParams,
+        ...action.payload,
+        pageNumber: 1,
+      };
     },
     setPageNumber: (state, action) => {
       state.productsLoaded = false;
-      state.productParams = {...state.productParams, ...action.payload};
+      state.productParams = { ...state.productParams, ...action.payload };
     },
     setMetadata: (state, action) => {
-        state.metadata = action.payload;
+      state.metadata = action.payload;
     },
     resetProductParams: (state) => {
-        state.productParams = initParams();
-    }
+      state.productParams = initParams();
+    },
+    setProduct: (state, action) => {
+      productsAdapter.upsertOne(state, action.payload);
+      state.productsLoaded = false;
+    },
+    removeProduct: (state, action) => {
+      productsAdapter.removeOne(state, action.payload);
+      state.productsLoaded = false;
+    },
   },
   extraReducers: (builder) => {
     // all products
@@ -154,4 +170,11 @@ export const productSelectors = productsAdapter.getSelectors(
   (state: RootState) => state.catalog
 );
 
-export const {setProductParams, resetProductParams, setMetadata, setPageNumber} = catalogSlice.actions;
+export const {
+  setProductParams,
+  resetProductParams,
+  setMetadata,
+  setPageNumber,
+  setProduct,
+  removeProduct,
+} = catalogSlice.actions;
