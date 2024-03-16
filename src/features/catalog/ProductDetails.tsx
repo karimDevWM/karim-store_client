@@ -20,6 +20,7 @@ export default function ProductDetails() {
 
   useEffect(() => {
     if(item) setQuantity(item.quantity);
+    
     if(!product) dispatch(fetchProductAsync(parseInt(id!)))
   }, [id, item, dispatch, product])
 
@@ -46,12 +47,12 @@ export default function ProductDetails() {
     return(
         <Grid container spacing={6}>
           <Grid item xs={6}>
-            <img src={process.env.PUBLIC_URL + '/images/' + product.photo} alt={product.name} style={{width: "100%"}}/>
+            <img src={product.pictureUrl} alt={product.name} style={{width: "100%"}}/>
           </Grid>
           <Grid item xs={6}>
             <Typography variant="h3">{product.name}</Typography>
             <Divider sx={{mb: 2}} />
-            <Typography variant="h4" color="secondary">€{(product.price / 100).toFixed(2)}</Typography>
+            <Typography variant="h4" color="secondary">€{(product.price)}</Typography>
               <TableContainer>
                 <Table>
                   <TableBody>

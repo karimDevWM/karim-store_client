@@ -1,10 +1,10 @@
-import { ListItem, ListItemAvatar, Avatar, ListItemText, Button, Card, CardActions, CardContent, CardMedia, Typography, CardHeader } from "@mui/material";
+import { Avatar, Button, Card, CardActions, CardContent, CardMedia, Typography, CardHeader } from "@mui/material";
 import { Product } from "../../app/models/product";
 import { Link } from "react-router-dom";
 import { LoadingButton } from "@mui/lab";
 import { currencyFormat } from "../../app/util/util";
 import { useAppDispatch, useAppSelector } from "../../app/store/configureStore";
-import { addBasketItemAsync, setBasket } from "../Basket/basketSlice";
+import { addBasketItemAsync } from "../Basket/basketSlice";
 
 interface Props{
     product: Product;
@@ -14,6 +14,7 @@ export default function ProductCard({ product }: Props){
     const {status} = useAppSelector(state => state.basket);
     const dispatch = useAppDispatch();
 
+    // console.log(product);
     return(
         <>
             <Card>
@@ -30,7 +31,7 @@ export default function ProductCard({ product }: Props){
                 />
                 <CardMedia
                     sx={{ height: 140, backgroundSize: "contain"}}
-                    image={process.env.PUBLIC_URL + '/images/' + product.photo}
+                    image={product.pictureUrl}
                     title={product.name}
                 />
                 <CardContent>

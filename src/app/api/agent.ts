@@ -1,8 +1,8 @@
 import axios, { AxiosError, AxiosResponse } from "axios";
 import { toast } from "react-toastify";
 import { router } from "../router/Routes";
-import { resolve } from "path";
-import { get } from "http";
+import { PaginatedResponse } from "../models/pagination";
+import { store } from "../store/configureStore";
 
 const sleep = () => new Promise(resolve => setTimeout(resolve, 500));
 
@@ -11,8 +11,26 @@ axios.defaults.withCredentials = true;
 
 const responseBody = (response: AxiosResponse) => response.data;
 
+axios.interceptors.request.use(config => {
+    const token = store.getState().account.user?.token;
+    if(token) config.headers.Authorization = `Bearer ${token}`;
+    return config;
+})
+
 axios.interceptors.response.use(async response => {
     await sleep();
+    /*
+     * pagination doit etre ecrit de la meme maniere que dans le header reçu de l'api et
+     * doit etre ecris en miniscule car axios ne reconnait que siil est en majuscule" 
+    */
+    const pagination = response.headers['pagination'];
+    if(pagination) {
+        response.data = new PaginatedResponse(
+            response.data,
+            JSON.parse(pagination)
+        );
+        return response;
+    }
     return response
 }, (error: AxiosError) => {
     const {data, status} = error.response as AxiosResponse;
@@ -42,15 +60,22 @@ axios.interceptors.response.use(async response => {
 })
 
 const requests = {
-    get: (url: string) => axios.get(url).then(responseBody),
+    get: (url: string, params?: URLSearchParams) => axios.get(url, {params}).then(responseBody),
     post: (url: string, body: object) => axios.post(url, body).then(responseBody),
     put: (url: string, body: object) => axios.put(url, body).then(responseBody),
     delete: (url: string) => axios.delete(url).then(responseBody),
+    postForm: (url: string, data: FormData) => axios.post(url, data, {
+        headers: {'Content-type': 'multipart/form-data'}
+    }).then(responseBody),
+    putForm: (url: string, data: FormData) => axios.put(url, data, {
+        headers: {'Content-type': 'multipart/form-data'}
+    }).then(responseBody)
 }
 
 const Catalog = {
-    list: () => requests.get('Products/GetProductsWithoutFilters'),
-    details: (id: number) => requests.get(`Products/GetProduct/${id}`)
+    list: (params: URLSearchParams) => requests.get('Products/GetProducts', params),
+    details: (id: number) => requests.get(`Products/GetProduct/${id}`),
+    fetchFilters: () => requests.get('Products/GetFilters/filters')
 }
 
 
@@ -68,10 +93,40 @@ const Basket = {
     removeItem: (productId: number, quantity = 1) => requests.delete(`Basket/RemoveBasket?productId=${productId}&quantity=${quantity}`),
 }
 
+const Account = {
+    login: (values: any) => requests.post('Account/Login/login', values),
+    register: (values: any) => requests.post('Account/Register/register', values),
+    currentUser: () => requests.get('Account/GetCurrentUser/currentUser'),
+    fetchAddress: () => requests.get('Account/GetSavedAddress/savedAddress')
+}
+
+const Orders = {
+    list: () => requests.get('Orders/GetOrders'),
+    fetch: (id: number) => requests.get(`Orders/GetOrder/${id}`),
+    create: (values: any) => requests.post('Orders/CreateOrder', values)
+}
+
+function createFormData(item: any) {
+    const formData = new FormData();
+    for (const key in item) {
+        formData.append(key, item[key])
+    }
+    return formData;
+}
+
+const Admin = {
+    createProduct: (product: any) => requests.postForm('Products/CreateProduct', createFormData(product)),
+    updateProduct: (product: any) => requests.putForm('Products/UpdateProduct', createFormData(product)),
+    deleteProduct: (id: number) => requests.delete(`products/DeleteProduct/${id}`)
+}
+
 const agent = {
     Catalog,
     TestErrors,
     Basket,
+    Account,
+    Orders,
+    Admin
 }
 
 export default agent;
