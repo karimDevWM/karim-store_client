@@ -6,7 +6,7 @@ import { store } from "../store/configureStore";
 
 const sleep = () => new Promise(resolve => setTimeout(resolve, 500));
 
-axios.defaults.baseURL = "http://localhost:5011/api/";
+axios.defaults.baseURL = "http://karimshop.karim-portfolio.xyz/api/";
 axios.defaults.withCredentials = true;
 
 const responseBody = (response: AxiosResponse) => response.data;
@@ -21,7 +21,7 @@ axios.interceptors.response.use(async response => {
     await sleep();
     /*
      * pagination doit etre ecrit de la meme maniere que dans le header reçu de l'api et
-     * doit etre ecris en miniscule car axios ne reconnait que siil est en majuscule" 
+     * doit etre ecris en miniscule car axios ne reconnait que siil est en miniscule" 
     */
     const pagination = response.headers['pagination'];
     if(pagination) {
