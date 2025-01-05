@@ -3,6 +3,7 @@ import { Product } from "../../app/models/product";
 import ProductCard from "./ProductCard";
 import { useAppSelector } from "../../app/store/configureStore";
 import ProductCardSkeleton from "./ProductCardSkeleton";
+import Grid2 from "@mui/material/Unstable_Grid2";
 
 interface Props{
     products: Product[]
